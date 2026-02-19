@@ -2,16 +2,16 @@ cmake_minimum_required(VERSION 3.5)
 project(libmotioncapture)
 
 # define some options
-option(LIBMOTIONCAPTURE_BUILD_PYTHON_BINDINGS "Generate Python Bindings" ON)
+option(LIBMOTIONCAPTURE_BUILD_PYTHON_BINDINGS "Generate Python Bindings" OFF)
 option(LIBMOTIONCAPTURE_ENABLE_QUALISYS "Enable Qualisys" OFF)
 option(LIBMOTIONCAPTURE_ENABLE_OPTITRACK "Enable Optitrack" ON)
 option(LIBMOTIONCAPTURE_ENABLE_OPTITRACK_CLOSED_SOURCE "Enable Optitrack (Closed Source)" OFF)
 option(LIBMOTIONCAPTURE_ENABLE_VICON "Enable Vicon" OFF)
 option(LIBMOTIONCAPTURE_ENABLE_NOKOV "Enable Nokov" OFF)
-option(LIBMOTIONCAPTURE_ENABLE_VRPN "Enable VRPN" OFF)
+option(LIBMOTIONCAPTURE_ENABLE_VRPN "Enable VRPN" ON)
 option(LIBMOTIONCAPTURE_ENABLE_FZMOTION "Enable FZMOTION" OFF)
 option(LIBMOTIONCAPTURE_ENABLE_MOTIONANALYSIS "Enable MotionAnalysis" OFF)
-option(LIBMOTIONCAPTURE_BUILD_EXAMPLE "Enable Example application" ON)
+option(LIBMOTIONCAPTURE_BUILD_EXAMPLE "Enable Example application" OFF)
 
 # Enable C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -223,7 +223,7 @@ include_directories(
 )
 
 ## Declare a cpp library
-add_library(libmotioncapture
+add_library(libmotioncapture SHARED
   ${my_files}
 )
 
@@ -232,7 +232,8 @@ target_link_directories(libmotioncapture PUBLIC
   ${my_link_directories}
 )
 target_link_libraries(libmotioncapture
-  ${my_libraries}
+  PRIVATE
+    ${my_libraries}
 )
 set_property(TARGET libmotioncapture PROPERTY POSITION_INDEPENDENT_CODE ON)
 
@@ -263,4 +264,38 @@ if (LIBMOTIONCAPTURE_BUILD_EXAMPLE)
   )
 
 endif()
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+install(
+  TARGETS libmotioncapture
+  EXPORT libmotioncaptureTargets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
+install(EXPORT libmotioncaptureTargets
+  FILE libmotioncaptureTargets.cmake
+  NAMESPACE libmotioncapture::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libmotioncapture
+)
+
+configure_package_config_file(
+  cmake/libmotioncaptureConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/libmotioncaptureConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libmotioncapture
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/libmotioncaptureConfig.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/libmotioncapture
+)
+
 
